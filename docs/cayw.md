@@ -25,6 +25,74 @@ inoremap <C-z> <C-r>=ZoteroCite()<CR>
 
 This inserts the citation at the cursor using the shortcut ctrl-z (in insert mode) or `<leader>`z (in normal, visual etc. modes, `<leader>` being backslash by default).
 
+### Emacs
+
+Graciously supplied by Maarten Wisse:
+
+Save this file as betterbibtex.el in a place where Emacs can find it (usually .emacs.d/lisp)
+
+```
+;;; betterbibtex.el --- Call Zotero from Emacs   -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2019  Maarten Wisse
+
+;; Author: Maarten Wisse <maarten.wisse@pthu.nl>
+;; Keywords: lisp
+;; Version: 0.0.1
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; Code:
+
+;;;###autoload
+(defun insert-bbt-key ()
+"This function calls the BetterBibTeX localhost CAYW and inserts the corresponding BetterBibtex Citekey into the document one is working on"
+  (setq bbtbuffer (url-retrieve-synchronously "http://localhost:23119/better-bibtex/cayw?format=pandoc&brackets=yes"))
+  (setq schrijftekstbuffer (current-buffer))
+  (switch-to-buffer bbtbuffer)
+  (goto-char (point-max))
+  (interactive)
+  (move-beginning-of-line nil)
+  (set-mark-command nil)
+  (move-end-of-line nil)
+  (setq betterbibtexkey (buffer-substring (region-beginning) (region-end)))
+  (erase-buffer)
+  (switch-to-buffer schrijftekstbuffer)
+  (insert betterbibtexkey)
+  )
+
+(provide 'betterbibtex)
+;;; betterbibtex.el ends here
+```
+At the moment, the settings discussed in this page are hard-coded in the URL. Modify them as you wish (Pandoc with brackets is how it is now).
+
+Then, in your .emacs file, add this:
+```
+;; You probably have to do something like this to make Emacs find the package
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+
+;; Load betterbibtex
+(require 'betterbibtex)
+
+;; Set a key-binding. The one used here is "C-c b"
+(global-set-key [3 98] (quote insert-bbt-key))
+
+```
+You should now be able to call Better BibTeX from any buffer in Emacs.
+
 ###  Zotero Citations for Atom
 
 A sample implementation of real integration (rather than the working-but-clunky workarounds using paste) can be found in the [Zotero Citations](https://atom.io/packages/zotero-citations) package for the [Atom](http://atom.io) editor.
